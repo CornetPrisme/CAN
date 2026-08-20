@@ -1,28 +1,19 @@
-#include "CanManager.h"
+#include "CanMessages.h"
 
+void setup() {
+}
+
+
+void loop() {
+}
+
+/*
 CanManager can;
 
-CAN_STRUCT(BOUTTON, 106, 
-  bool  boutton1;
-);
+unsigned long lastSendTime = 0;
+const unsigned long sendInterval = 2000;
 
-CAN_STRUCT(BYE, 110, 
-  bool  boutton1;
-);
-
-void salut(can_frame_t frame) {
-    BOUTTON msg;
-    memcpy(&frame.data, &msg, frame.length);
-    digitalWrite(10, msg.boutton1);
-    Serial.printf("fonction executee mon ami !! \n ");
-}
-
-void bye(can_frame_t frame) {
-    BYE msg;
-    memcpy(&frame.data, &msg, frame.length);
-    digitalWrite(10, msg.boutton1);
-    Serial.printf("fonction bye bye bye bye executee mon ami !! \n ");
-}
+bool etatMoteur = false;
 
 void setup() {
     Serial.begin(115200);
@@ -34,9 +25,20 @@ void setup() {
       can.init();
     #endif
     
-    can.onReceive(BOUTTON::ID, salut);
-    can.onReceive(BYE::ID, bye);
+    Serial.println("Émetteur CAN initialisé");
 }
+
 void loop() {
     can.update();
+
+    if (millis() - lastSendTime >= sendInterval) {
+      lastSendTime = millis();
+      etatMoteur = !etatMoteur;
+
+      MOTEUR moteurMsg;
+      moteurMsg.etat = etatMoteur;
+      Serial.println("Message envoyé");
+      Serial.println(etatMoteur ? "Marche (1)" : "Arrêt (0)");
+    }
 }
+*/
