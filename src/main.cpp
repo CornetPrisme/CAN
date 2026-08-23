@@ -1,14 +1,14 @@
 #include "CanMessages.h"
 
-/*
+
 void setup() {
 }
 
 
 void loop() {
 }
-*/
 
+/*
 CanManager can;
 
 unsigned long lastSendTime = 0;
@@ -60,3 +60,4 @@ void loop() {
       Serial.println(vitesseMoteur);
     }
 }
+*/
