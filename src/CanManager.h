@@ -100,6 +100,8 @@ class CanManager {
   void init() {
     m_stm32CAN.begin();
     m_stm32CAN.setBaudRate(500000);
+
+    m_stm32CAN.setFilter(0, 0, 0);
   };
 
   void send_can(can_frame_t frame) {
