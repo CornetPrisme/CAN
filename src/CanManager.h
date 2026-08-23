@@ -120,7 +120,7 @@ class CanManager {
         return false;
     }
 
-    Serial.printf("Received CAN frame: ID=0x%X, Length=%d, RTR=%d, Data=", rx_msg.id, rx_msg.len, rx_msg.flags.remote);
+    //Serial.printf("Received CAN frame: ID=0x%X, Length=%d, RTR=%d, Data=", rx_msg.id, rx_msg.len, rx_msg.flags.remote);
     frame->id = rx_msg.id;
     frame->length = rx_msg.len;
     frame->rtr = rx_msg.flags.remote;
