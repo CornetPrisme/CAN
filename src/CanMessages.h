@@ -9,7 +9,6 @@ enum motor_id_t: uint8_t {
 
 CAN_STRUCT(MOTOR, 200,
   motor_id_t motor_id;
-  bool  etat;
-  bool forward;
+  bool  launch;
   uint8_t speed;
 );
