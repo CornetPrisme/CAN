@@ -10,5 +10,5 @@ enum motor_id_t: uint8_t {
 CAN_STRUCT(MOTOR, 200,
   motor_id_t motor_id;
   bool  launch;
-  uint8_t speed;
+  int16_t speed;
 );
