@@ -1,0 +1,30 @@
+{
+  "name": "CAN",
+  "version": "1.0.0",
+  "description": "A lightweight and robust library for Controller Area Network (CAN) bus communication between microcontrollers and devices.",
+  "keywords": "can, can-bus, communication, protocol, embedded, automotive",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/CornetPrisme/CAN.git"
+  },
+  "authors":
+  [
+    {
+      "name": "Blain Victor",
+      "email": "victor.blain2006@gmail.com",
+      "url": "https://vblain.fr"
+    },
+    {
+      "name": "Andrew Smith",
+      "email": "victor.blain2006@gmail.com",
+      "url": "https://vblain.fr",
+      "maintainer": true
+    }
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/CornetPrisme/CAN",
+  "dependencies": {},
+  "frameworks": "*",
+  "platforms": "*"
+}
