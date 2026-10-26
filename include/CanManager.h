@@ -59,6 +59,7 @@ class CanManager {
     }
 
     // Start TWAI driver
+    
     if (twai_start() == ESP_OK) {
         Serial.println("Driver started");
     } else {
@@ -73,11 +74,13 @@ class CanManager {
       message.identifier = frame.id;
       message.data_length_code = frame.length;
       memcpy(&message.data, frame.data, frame.length);
+      /*
       if (twai_transmit(&message, 0) == ESP_OK) {
           printf("Message queued for transmission\n");
       } else {
           printf("Failed to queue message for transmission\n");
       }
+      */
   };
 
 
