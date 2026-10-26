@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include "CanMessages.h"
 
-#define CAN_TX_PIN GPIO_NUM_5
-#define CAN_RX_PIN GPIO_NUM_4
+#define CAN_TX_PIN GPIO_NUM_12
+#define CAN_RX_PIN GPIO_NUM_11
 
 CanManager can;
 
