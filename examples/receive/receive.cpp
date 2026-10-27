@@ -1,47 +1,43 @@
-#include <Arduino.h>
-#include "CanMessages.h"
+#include "CanManager.h"
 
+#ifdef ARDUINO_ARCH_ESP32
 #define CAN_TX_PIN GPIO_NUM_12
 #define CAN_RX_PIN GPIO_NUM_11
+#endif
 
 CanManager can;
 
 void setup() {
-  Serial.begin(115200);
-  delay(1000);
-  Serial.println("Initialisation du sniffer CAN...");
+    Serial.begin(115200);
+    delay(2000);
+    Serial.println("Start");
 
-  // Initialisation du bus CAN
-  if (can.init(CAN_RX_PIN, CAN_TX_PIN)) {
-    Serial.println("CAN initialisé avec succès !");
-  } else {
-    Serial.println("Échec de l'initialisation du CAN.");
-    while (1);
-  }
+    // Initialisation
+    #ifdef ARDUINO_ARCH_ESP32
+      can.init(CAN_RX_PIN, CAN_TX_PIN);
+    #endif
+    
+    #ifdef ARDUINO_ARCH_STM32
+      can.init();
+    #endif
 }
 
 void loop() {
-  can_frame_t frame;
-  
-  if (can.receive_can(&frame)) {
-    Serial.print("ID: 0x");
-    Serial.print(frame.id, HEX);
-    
-    if (frame.rtr) {
-      Serial.println(" [RTR]");
-    } else {
-      Serial.print(" | DLC: ");
-      Serial.print(frame.length);
-      Serial.print(" | Data: ");
-      
-      for (uint8_t i = 0; i < frame.length; i++) {
-        if (frame.data[i] < 0x10) {
-          Serial.print("0");
+    can_frame_t trame_brute;
+    if (can.receive_can(&trame_brute)) {
+        Serial.print("ID: 0x");
+        Serial.print(trame_brute.id, HEX);
+        Serial.print(" | RTR: ");
+        Serial.print(trame_brute.rtr);
+        Serial.print(" | Taille: ");
+        Serial.print(trame_brute.length);
+        Serial.print(" | Données: ");
+        for (uint8_t i = 0; i < trame_brute.length; i++) {
+            Serial.print("0x");
+            if (trame_brute.data[i] < 0x10) Serial.print("0");
+            Serial.print(trame_brute.data[i], HEX);
+            Serial.print(" ");
         }
-        Serial.print(frame.data[i], HEX);
-        Serial.print(" ");
-      }
-      Serial.println();
+        Serial.println();
     }
-  }
 }

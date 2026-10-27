@@ -1,51 +1,42 @@
-#include <Arduino.h>
-#include "CanMessages.h"
+#include "CanManager.h"
 
+CAN_STRUCT(SensorData, 100,
+  float temperature;
+  float humidity;
+);
+
+#ifdef ARDUINO_ARCH_ESP32
 #define CAN_TX_PIN GPIO_NUM_12
 #define CAN_RX_PIN GPIO_NUM_11
+#endif
 
 CanManager can;
-uint8_t compteur = 0;
+unsigned long lastSendTime = 0;
 
 void setup() {
-  Serial.begin(115200);
-  delay(1000);
-  Serial.println("Initialisation de l'émetteur CAN...");
+    Serial.begin(115200);
+    delay(2000);
+    Serial.println("Start");
 
-  // Initialisation du bus CAN
-  if (can.init(CAN_RX_PIN, CAN_TX_PIN)) {
-    Serial.println("CAN initialisé avec succès !");
-  } else {
-    Serial.println("Échec de l'initialisation du CAN.");
-    while (1);
-  }
+    // Initialisation
+    #ifdef ARDUINO_ARCH_ESP32
+      can.init(CAN_RX_PIN, CAN_TX_PIN);
+    #endif
+    
+    #ifdef ARDUINO_ARCH_STM32
+      can.init();
+    #endif
 }
 
 void loop() {
-  // Préparation de la trame CAN
-  can_frame_t frame;
-  frame.id = 0x123;    
-  frame.length = 8;     
-  frame.rtr = false;     
-  
-  frame.data[0] = 0xAA;
-  frame.data[1] = 0xBB;
-  frame.data[2] = 0xCC;
-  frame.data[3] = 0xDD;
-  frame.data[4] = 0xEE;
-  frame.data[5] = 0xFF;
-  frame.data[6] = 0x00;
-  frame.data[7] = compteur;
+    if (millis() - lastSendTime > 2000) {
+        lastSendTime = millis();
 
-  // Envoi du message
-  can.send_can(frame);
-
-  Serial.print("Message envoyé avec l'ID: 0x");
-  Serial.print(frame.id, HEX);
-  Serial.print(" | Compteur: ");
-  Serial.println(compteur);
-
-  compteur++;
-  
-  delay(1000);
+        SensorData mySensor;
+        mySensor.temperature = 24.5;
+        mySensor.humidity = 60.0;
+        
+        can.send(mySensor);
+        Serial.println("Message envoyé : ID=100");
+    }
 }

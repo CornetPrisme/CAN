@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include <functional>
 
 #ifdef ARDUINO_ARCH_STM32
 #include "STM32_CAN.h"
@@ -8,7 +9,7 @@
 #include "driver/twai.h"
 #endif
 
-#define CALLBACKS_NUMBER 10 
+#define CALLBACKS_NUMBER 10
 
 struct can_frame_t {
   uint32_t id = 0;       
@@ -17,21 +18,6 @@ struct can_frame_t {
   bool rtr = false;   
 };
 
-constexpr uint32_t DUPLICATE_IDS[] = { 
-    100,
-    101,
-    102,
-    103    
-};
-constexpr bool is_duplicate_id(uint32_t id) {
-    for (uint32_t duplicate_id : DUPLICATE_IDS) {
-        if (duplicate_id == id) {
-            return true;
-        }
-    }
-    return false;
-}
-
 #define CAN_STRUCT(struct_name, can_id, ...) \
   struct __attribute__((packed)) struct_name { \
     static constexpr uint32_t ID = can_id; \
@@ -39,7 +25,7 @@ constexpr bool is_duplicate_id(uint32_t id) {
   }; \
   static_assert(sizeof(struct_name) <= 8, #struct_name " exceeds CAN frame size (8 bytes)"); \
   static_assert(std::is_trivially_copyable<struct_name>::value, #struct_name " must be trivially copyable"); \
-  static_assert(!is_duplicate_id(can_id), #can_id " is already in use"); \
+
 
 
 class CanManager {
@@ -56,10 +42,7 @@ class CanManager {
     } else {
         Serial.println("Failed to install driver");
         return false;
-    }
-
-    // Start TWAI driver
-    
+    }    
     if (twai_start() == ESP_OK) {
         Serial.println("Driver started");
     } else {
@@ -81,7 +64,6 @@ class CanManager {
       }
   };
 
-
   bool receive_can(can_frame_t* frame) {
     twai_message_t message;
     if (twai_receive(&message, 0) == ESP_ERR_TIMEOUT) {
@@ -101,7 +83,6 @@ class CanManager {
   void init() {
     m_stm32CAN.begin();
     m_stm32CAN.setBaudRate(500000);
-
     m_stm32CAN.setFilter(0, 0, 0);
   };
 
@@ -120,16 +101,13 @@ class CanManager {
     if (!m_stm32CAN.read(rx_msg)){
         return false;
     }
-
-    //Serial.printf("Received CAN frame: ID=0x%X, Length=%d, RTR=%d, Data=", rx_msg.id, rx_msg.len, rx_msg.flags.remote);
     frame->id = rx_msg.id;
     frame->length = rx_msg.len;
     frame->rtr = rx_msg.flags.remote;
     memcpy(frame->data, &rx_msg.buf, rx_msg.len);
     return true;
   };
-
-#endif
+  #endif
 
   template<typename T>
   void send(T data) {
@@ -140,16 +118,20 @@ class CanManager {
     send_can(frame);
   }
 
-  typedef void (*CanCallback)(can_frame_t);
-
-  bool onReceive(uint32_t id, CanCallback funcToCall) {
+  template<typename T>
+  bool onReceive(void (*funcToCall)(T)) {
       if (_callback_count < CALLBACKS_NUMBER) {
-          _callbacks[_callback_count].id = id;
-          _callbacks[_callback_count].function = funcToCall;
+          _callbacks[_callback_count].id = T::ID; 
+          _callbacks[_callback_count].function = [funcToCall](can_frame_t frame) {
+              T data;
+              memcpy(&data, frame.data, sizeof(T));
+              funcToCall(data); 
+          };
+          
           _callback_count++;
           return true;
       }
-      Serial.println("Trop de callbacks enregistrés (Max 10)"); // faire vérification automatique
+      Serial.println("Trop de callbacks enregistrés (Max 10)"); 
       return false;
   }
 
@@ -162,18 +144,18 @@ class CanManager {
               }
           }
       }
-    }
+  }
 
   private:
   struct CallbackEntry {
     uint32_t id = 0;
-    CanCallback function;
+    std::function<void(can_frame_t)> function; 
   };
 
   CallbackEntry _callbacks[CALLBACKS_NUMBER];
   uint8_t _callback_count = 0;
 
   #ifdef ARDUINO_ARCH_STM32
-    STM32_CAN m_stm32CAN;
+  STM32_CAN m_stm32CAN;
   #endif
 };
